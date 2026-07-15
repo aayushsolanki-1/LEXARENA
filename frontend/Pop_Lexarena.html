@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexarena</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Archivo:wght@500;600;700;800;900&display=swap');
+  :root{
+    --bg:#ffe14d;
+    --paper:#ffffff;
+    --ink:#0a0a0a;
+    --red:#ff2b3c;
+    --blue:#0064ff;
+    --yellow:#ffe14d;
+    --pink:#ff5cb8;
+    --green:#00c46a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Archivo',sans-serif;min-height:100vh;overflow-x:hidden;
+    background-image:radial-gradient(circle, rgba(10,10,10,0.06) 1.6px, transparent 1.6px);background-size:14px 14px;}
+  .hidden{display:none !important;}
+  .wrap{max-width:680px;margin:0 auto;padding:30px 18px 70px;position:relative;}
+
+  body.shake{animation:shakeit .35s;}
+  @keyframes shakeit{
+    0%,100%{transform:translate(0,0);}10%{transform:translate(-6px,3px);}20%{transform:translate(5px,-4px);}
+    30%{transform:translate(-5px,2px);}40%{transform:translate(6px,-2px);}50%{transform:translate(-4px,4px);}
+    60%{transform:translate(4px,-3px);}70%{transform:translate(-3px,2px);}80%{transform:translate(3px,-2px);}90%{transform:translate(-2px,1px);}
+  }
+
+  .topbar{text-align:center;margin-bottom:14px;}
+  .langtoggle{position:fixed;top:16px;right:16px;z-index:250;display:flex;border:3px solid var(--ink);border-radius:99px;overflow:hidden;background:var(--paper);box-shadow:3px 3px 0 var(--ink);}
+  .langtoggle button{font-family:'Archivo';font-weight:900;font-size:13px;border:none;background:transparent;color:var(--ink);padding:7px 14px;cursor:pointer;letter-spacing:0.5px;}
+  .langtoggle button.on{background:var(--blue);color:#fff;}
+  @media(max-width:520px){ .langtoggle{top:10px;right:10px;} .langtoggle button{padding:6px 11px;font-size:12px;} }
+  .fsbtn{position:fixed;top:16px;left:16px;z-index:250;width:44px;height:44px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    border:3px solid var(--ink);border-radius:12px;background:var(--paper);
+    box-shadow:3px 3px 0 var(--ink);font-size:20px;line-height:1;padding:0;color:var(--ink);}
+  .fsbtn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink);}
+  .fsbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  @media(max-width:520px){ .fsbtn{top:10px;left:10px;width:38px;height:38px;font-size:17px;} }
+  .brand{font-family:'Bangers';font-size:50px;letter-spacing:2px;color:var(--paper);
+    -webkit-text-stroke:3px var(--ink);transform:rotate(-2deg);display:inline-block;text-shadow:5px 5px 0 var(--red);}
+  .tagline{font-family:'Archivo';font-weight:800;font-size:12.5px;color:var(--ink);margin-top:8px;
+    background:var(--paper);display:inline-block;padding:4px 14px;border:2.5px solid var(--ink);border-radius:99px;transform:rotate(1deg);}
+
+  h2.sec-title{font-family:'Bangers';font-size:28px;margin-bottom:6px;transform:rotate(-1deg);display:inline-block;}
+  p.sec-sub{font-size:14px;color:#3a3a3a;font-weight:600;line-height:1.5;margin-bottom:24px;max-width:480px;}
+
+  /* ============ MODE SELECT ============ */
+  .modegrid{display:flex;flex-direction:column;gap:16px;}
+  .modecard{
+    background:var(--paper);border:3px solid var(--ink);border-radius:4px;padding:18px 20px;
+    display:flex;gap:16px;align-items:center;cursor:pointer;position:relative;
+    box-shadow:6px 6px 0 var(--ink);transition:transform .12s, box-shadow .12s;
+  }
+  .modecard:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink);}
+  .modecard:active{transform:translate(1px,1px);box-shadow:3px 3px 0 var(--ink);}
+  .modecard .burst{width:54px;height:54px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-family:'Bangers';font-size:16px;border:3px solid var(--ink);}
+  .m1 .burst{background:var(--red);color:#fff;}
+  .m2 .burst{background:var(--blue);color:#fff;}
+  .m3 .burst{background:var(--green);color:#fff;}
+  .modecard .body{flex:1;}
+  .modecard .name{font-family:'Bangers';font-size:21px;margin-bottom:4px;letter-spacing:0.5px;}
+  .modecard .desc{font-size:13px;font-weight:600;color:#3a3a3a;line-height:1.45;}
+
+  /* ============ SETUP ============ */
+  .card{background:var(--paper);border:3px solid var(--ink);border-radius:4px;padding:24px;box-shadow:6px 6px 0 var(--ink);margin-bottom:20px;}
+  .field{margin-bottom:20px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-weight:800;font-size:13px;color:var(--ink);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.3px;}
+  input[type=text]{
+    width:100%;background:#fff8e0;border:3px solid var(--ink);border-radius:4px;color:var(--ink);
+    font-family:'Archivo';font-weight:600;font-size:15px;padding:11px 13px;outline:none;
+  }
+  input[type=text]:focus{background:#fff;box-shadow:3px 3px 0 var(--blue);}
+  input[type=text]::placeholder{color:#a09a85;font-weight:500;}
+  .chiprow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .chip{border:2.5px solid var(--ink);background:var(--yellow);color:var(--ink);border-radius:99px;font-weight:800;font-size:12.5px;padding:6px 14px;cursor:pointer;transition:transform .1s;}
+  .chip:hover{transform:translateY(-2px) rotate(-1deg);background:var(--pink);color:#fff;}
+  .diffrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .diffbtn{border:2.5px solid var(--ink);background:#fff8e0;color:var(--ink);border-radius:4px;font-weight:800;font-size:12px;padding:10px 4px;cursor:pointer;text-align:center;}
+  .diffbtn.sel{background:var(--blue);color:#fff;box-shadow:3px 3px 0 var(--ink);}
+
+  .btnrow{display:flex;gap:12px;margin-top:24px;}
+  button.btn-primary{
+    font-family:'Bangers';font-size:18px;letter-spacing:0.5px;color:#fff;border:3px solid var(--ink);padding:12px 26px;border-radius:4px;cursor:pointer;
+    background:var(--red);box-shadow:5px 5px 0 var(--ink);transition:transform .1s, box-shadow .1s;
+  }
+  button.btn-primary:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink);}
+  button.btn-primary:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  button.btn-primary:disabled{opacity:.3;cursor:not-allowed;box-shadow:none;transform:none;}
+  button.btn-ghost{font-family:'Archivo';font-weight:800;font-size:14px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);padding:12px 24px;border-radius:4px;cursor:pointer;}
+  button.btn-ghost:hover{background:#f0f0f0;}
+
+  /* ============ VS INTRO ============ */
+  /* ===== INTRO / TITLE SCREEN ===== */
+  #screenIntro{
+    position:fixed;inset:0;z-index:200;background:#0a0a0a;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    overflow:hidden;cursor:pointer;text-align:center;transition:background .6s ease;
+  }
+  #screenIntro.lit{background:var(--yellow);}
+  #screenIntro.hidden{display:none;}
+  .intro-skip{position:absolute;bottom:18px;right:20px;z-index:3;font-family:'Archivo';font-weight:800;
+    font-size:12px;letter-spacing:1.5px;color:#0a0a0a;background:rgba(255,255,255,.7);border:2px solid var(--ink);
+    border-radius:99px;padding:5px 14px;cursor:pointer;opacity:.85;}
+  .intro-skip:hover{opacity:1;}
+  #screenIntro:not(.lit) .intro-skip{color:#fff;background:rgba(255,255,255,.12);}
+  /* Animated backdrop canvas (swap this whole block for a <video> later). */
+  #introCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;}
+  .intro-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:20px;opacity:0;transition:opacity .5s ease;pointer-events:none;}
+  .intro-inner.reveal{opacity:1;pointer-events:auto;}
+  .intro-mascot{width:120px;height:120px;margin-bottom:6px;animation:introBob 2.4s ease-in-out infinite;}
+  @keyframes introBob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-14px) rotate(2deg);}}
+  .intro-brand{
+    font-family:'Bangers';font-size:88px;letter-spacing:3px;color:var(--paper);line-height:.9;
+    -webkit-text-stroke:4px var(--ink);text-shadow:8px 8px 0 var(--ink);
+    animation:introPop .6s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  @keyframes introPop{0%{transform:scale(.4) rotate(-8deg);opacity:0;}100%{transform:scale(1) rotate(-2deg);opacity:1;}}
+  .intro-tag{
+    font-family:'Archivo';font-weight:900;font-size:15px;letter-spacing:1px;color:var(--ink);
+    background:var(--paper);border:3px solid var(--ink);border-radius:99px;padding:7px 18px;margin-top:14px;
+    box-shadow:4px 4px 0 var(--ink);transform:rotate(-1deg);
+  }
+  .intro-start{
+    margin-top:40px;font-family:'Bangers';font-size:26px;letter-spacing:1.5px;color:var(--paper);
+    background:var(--red);border:4px solid var(--ink);border-radius:8px;padding:14px 40px;cursor:pointer;
+    box-shadow:6px 6px 0 var(--ink);transition:transform .1s, box-shadow .1s;
+  }
+  .intro-start:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink);}
+  .intro-start:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink);}
+  .intro-press{
+    margin-top:20px;font-family:'Archivo';font-weight:800;font-size:13px;letter-spacing:2px;color:var(--ink);
+    text-transform:uppercase;animation:introBlink 1.3s steps(2,start) infinite;
+  }
+  @keyframes introBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
+  @media(max-width:520px){
+    .intro-brand{font-size:58px;text-shadow:5px 5px 0 var(--ink);-webkit-text-stroke:3px var(--ink);}
+    .intro-start{font-size:22px;padding:12px 30px;}
+    .intro-mascot{width:92px;height:92px;}
+  }
+
+  #screenVS{
+    position:fixed;inset:0;z-index:100;background:var(--ink);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;overflow:hidden;
+  }
+  .vs-bg-stripe{position:absolute;inset:0;background:repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 40px, #0a0a0a 40px, #0a0a0a 80px);opacity:.6;}
+  .vs-fighters{display:flex;align-items:center;justify-content:center;gap:0;width:100%;position:relative;z-index:2;}
+  .fighter-card{
+    width:42%;max-width:230px;background:var(--paper);border:5px solid var(--ink);border-radius:8px;padding:24px 16px;text-align:center;
+    box-shadow:8px 8px 0 rgba(0,0,0,0.5);
+  }
+  .fighter-card.left{transform:translateX(-150%);animation:slideInLeft .55s cubic-bezier(.2,1.4,.4,1) forwards;}
+  .fighter-card.right{transform:translateX(150%);animation:slideInRight .55s cubic-bezier(.2,1.4,.4,1) forwards;}
+  @keyframes slideInLeft{to{transform:translateX(8px);}}
+  @keyframes slideInRight{to{transform:translateX(-8px);}}
+  .fighter-card .favatar{width:72px;height:72px;margin:0 auto 10px;}
+  .fighter-card .fname{font-family:'Bangers';font-size:22px;color:var(--ink);word-break:break-word;}
+  .fighter-card.left .fname{color:var(--red);}
+  .fighter-card.right .fname{color:var(--blue);}
+  .vs-mid{font-family:'Bangers';font-size:54px;color:var(--yellow);-webkit-text-stroke:3px var(--ink);position:relative;z-index:3;margin:0 -10px;
+    opacity:0;animation:vsPop .4s ease-out .5s forwards;transform:scale(0) rotate(-15deg);}
+  @keyframes vsPop{to{opacity:1;transform:scale(1) rotate(-8deg);}}
+  .vs-topic{font-family:'Bangers';font-size:20px;color:#fff;margin-top:26px;text-align:center;opacity:0;animation:fadeUp .4s ease-out 1s forwards;position:relative;z-index:2;}
+  .vs-sub{font-family:'Archivo';font-weight:700;font-size:13px;color:#bbb;margin-top:8px;text-align:center;opacity:0;animation:fadeUp .4s ease-out 1.15s forwards;position:relative;z-index:2;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .vs-fight-stamp{
+    font-family:'Bangers';font-size:70px;color:var(--red);-webkit-text-stroke:4px var(--ink);position:relative;z-index:4;margin-top:24px;
+    opacity:0;transform:scale(2.5) rotate(8deg);animation:fightStamp .5s cubic-bezier(.2,1,.3,1) 1.4s forwards;
+  }
+  @keyframes fightStamp{to{opacity:1;transform:scale(1) rotate(-4deg);}}
+
+  /* ============ GAME ============ */
+  .roundbanner{
+    position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0.5) rotate(-6deg);
+    font-family:'Bangers';font-size:46px;color:var(--paper);-webkit-text-stroke:3px var(--ink);
+    background:var(--blue);padding:14px 32px;border:4px solid var(--ink);border-radius:6px;
+    opacity:0;pointer-events:none;z-index:90;box-shadow:8px 8px 0 var(--ink);
+  }
+  .roundbanner.show{animation:roundPop 1.4s ease-out forwards;}
+  @keyframes roundPop{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(0.4) rotate(-10deg);}
+    20%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(3deg);}
+    75%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1) rotate(0deg);}
+  }
+
+  .metabar{display:flex;justify-content:space-between;background:var(--paper);border:3px solid var(--ink);border-radius:4px;
+    padding:10px 16px;margin-bottom:16px;font-size:12.5px;font-weight:800;flex-wrap:wrap;gap:6px;box-shadow:4px 4px 0 var(--ink);}
+  .metabar b{color:var(--red);}
+
+  /* health-bar style fighter HUD */
+  .fighterhud{display:flex;gap:12px;margin-bottom:18px;}
+  .hud-box{flex:1;background:var(--paper);border:3px solid var(--ink);border-radius:4px;padding:12px 14px;
+    box-shadow:5px 5px 0 var(--ink);transition:box-shadow .15s;}
+  .hud-box.active{box-shadow:5px 5px 0 var(--blue);}
+  .hud-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .hud-name{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;}
+  .hud-box.active .hud-name{color:var(--blue);}
+  .hud-pts{font-family:'Bangers';font-size:20px;}
+  .healthbar-bg{height:16px;background:#fff8e0;border:2.5px solid var(--ink);border-radius:99px;overflow:hidden;position:relative;}
+  .healthbar-fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.3,1,.4,1);}
+  .hud-box.a .healthbar-fill{background:linear-gradient(90deg,var(--red),#ff6a78);}
+  .hud-box.b .healthbar-fill{background:linear-gradient(90deg,var(--blue),#5ca3ff);}
+
+  .mirror-thinking{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;margin-bottom:14px;color:var(--blue);}
+  .mirror-thinking svg{animation:wobble 1s ease-in-out infinite;}
+  @keyframes wobble{0%,100%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}}
+
+  .timerwrap{margin-bottom:18px;}
+  .timerbar-bg{height:12px;background:#fff8e0;border:3px solid var(--ink);border-radius:99px;overflow:hidden;}
+  .timerbar{height:100%;background:var(--green);transition:width 1s linear, background .3s;}
+  .timerbar.warn{background:var(--red);animation:pulse-warn .5s infinite;}
+  @keyframes pulse-warn{0%,100%{opacity:1;}50%{opacity:.6;}}
+  .timertxt{font-size:12px;color:#3a3a3a;margin-top:7px;text-align:right;font-weight:800;}
+
+  .qbox{background:var(--paper);border:3px solid var(--ink);border-radius:4px;padding:22px;margin-bottom:18px;
+    box-shadow:6px 6px 0 var(--blue);position:relative;}
+  .qbox .qlabel{font-family:'Bangers';font-size:16px;color:var(--red);margin-bottom:10px;}
+  .qbox .qtext{font-size:17px;font-weight:700;line-height:1.5;}
+
+  textarea{width:100%;background:#fff8e0;border:3px solid var(--ink);border-radius:4px;color:var(--ink);
+    font-family:'Archivo';font-weight:600;font-size:14.5px;padding:13px;outline:none;resize:vertical;min-height:70px;}
+  textarea:focus{background:#fff;box-shadow:3px 3px 0 var(--blue);}
+  textarea::placeholder{color:#a09a85;font-weight:500;}
+
+  .feedback{margin-top:16px;padding:16px 18px;border-radius:4px;font-size:14px;line-height:1.5;border:3px solid var(--ink);font-weight:700;position:relative;overflow:hidden;}
+  .feedback.win{background:var(--green);color:#fff;box-shadow:5px 5px 0 var(--ink);}
+  .feedback.lose{background:var(--red);color:#fff;box-shadow:5px 5px 0 var(--ink);}
+  .feedback .vline{font-family:'Bangers';font-size:18px;margin-bottom:6px;}
+  .feedback .mirroranswer{background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:4px;padding:8px 10px;margin-bottom:10px;font-weight:600;font-size:13.5px;}
+  .feedback .mirroranswer .malabel{display:block;font-family:'Bangers';font-size:12px;letter-spacing:1px;color:var(--blue);margin-bottom:3px;}
+
+  /* particle burst canvas */
+  #particleCanvas{position:fixed;inset:0;pointer-events:none;z-index:80;}
+
+  .streakflash{
+    position:fixed;top:26%;left:50%;transform:translate(-50%,-50%) rotate(-6deg) scale(0.7);
+    font-family:'Bangers';font-size:34px;color:var(--ink);background:var(--yellow);
+    padding:16px 30px;border:4px solid var(--ink);border-radius:4px;opacity:0;pointer-events:none;z-index:95;
+    box-shadow:7px 7px 0 var(--ink);
+  }
+  .streakflash.show{animation:streakpop 1.1s ease-out forwards;}
+  @keyframes streakpop{
+    0%{opacity:0;transform:translate(-50%,-50%) rotate(-6deg) scale(0.5);}
+    20%{opacity:1;transform:translate(-50%,-50%) rotate(3deg) scale(1.12);}
+    70%{opacity:1;transform:translate(-50%,-50%) rotate(-2deg) scale(1);}
+    100%{opacity:0;}
+  }
+
+  /* ============ RECAP / KO ============ */
+  #screenRecap.hidden{display:none;}
+  .ko-stamp{
+    font-family:'Bangers';font-size:64px;text-align:center;color:var(--red);-webkit-text-stroke:3px var(--ink);
+    transform:rotate(-4deg) scale(0.5);opacity:0;animation:koPop .6s cubic-bezier(.2,1,.3,1) forwards;margin-bottom:6px;
+  }
+  @keyframes koPop{to{transform:rotate(-4deg) scale(1);opacity:1;}}
+  .finalbox{background:var(--paper);border:4px solid var(--ink);border-radius:4px;padding:30px 24px;text-align:center;
+    margin-bottom:22px;box-shadow:8px 8px 0 var(--ink);}
+  .finalbox .bigverdict{font-family:'Bangers';font-size:26px;margin-bottom:8px;color:var(--red);}
+  .finalbox .sub{font-size:14px;color:#3a3a3a;font-weight:700;}
+  .finalbox .final-hud{display:flex;gap:14px;margin-top:18px;}
+  .finalbox .final-hud .hud-box{box-shadow:4px 4px 0 var(--ink);}
+
+  .recaplist{background:var(--paper);border:3px solid var(--ink);border-radius:4px;padding:8px;max-height:280px;overflow-y:auto;margin-bottom:18px;box-shadow:5px 5px 0 var(--ink);}
+  .logline{display:flex;align-items:center;gap:10px;padding:11px 12px;font-size:13.5px;font-weight:600;}
+  .logline+.logline{border-top:2px dashed var(--ink);}
+  .logline .who{font-weight:800;font-size:11.5px;width:90px;flex-shrink:0;text-transform:uppercase;}
+  .logline .ans{flex:1;}
+  .logline .mark{flex-shrink:0;font-weight:800;font-size:11px;padding:3px 10px;border-radius:99px;border:2px solid var(--ink);}
+  .logline .mark.y{background:var(--green);color:#fff;}
+  .logline .mark.n{background:var(--red);color:#fff;}
+
+  @media (max-width:560px){
+    .brand{font-size:36px;}
+    .fighterhud{flex-direction:column;}
+    .diffrow{grid-template-columns:repeat(2,1fr);}
+    .fighter-card{width:88%;}
+    .vs-fighters{flex-direction:column;gap:14px;}
+    .fighter-card.left{transform:translateY(-150%);animation:slideInTop .55s cubic-bezier(.2,1.4,.4,1) forwards;}
+    .fighter-card.right{transform:translateY(150%);animation:slideInBottom .55s cubic-bezier(.2,1.4,.4,1) forwards;}
+    @keyframes slideInTop{to{transform:translateY(0);}}
+    @keyframes slideInBottom{to{transform:translateY(0);}}
+    .vs-mid{margin:6px 0;}
+  }
+
+  .recaptable{width:100%;border-collapse:collapse;font-family:inherit;table-layout:auto;}
+  .recaptable th{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-align:left;padding:11px 12px;border-bottom:3px solid #111;}
+  .recaptable td{font-size:16px;padding:10px 12px;border-bottom:2px solid rgba(0,0,0,0.1);}
+  .recaptable tr:last-child td{border-bottom:none;}
+  .recaptable .rc-round{font-weight:800;}
+  .recaptable .rc-who{font-weight:700;}
+  .recaptable .rc-result{font-weight:800;text-transform:uppercase;}
+  .recaptable .rc-result.y{color:#1a9d4e;}
+  .recaptable .rc-result.n{color:#e23b3b;}
+  .recaptable .rc-pts{font-weight:800;text-align:right;}
+
+  .recapcols{display:flex;flex-direction:column;gap:18px;}
+  .recapcol{border:3px solid #111;border-radius:14px;background:#fff;overflow:hidden;box-shadow:4px 4px 0 #111;}
+  .recapcol-head{font-weight:900;font-size:16px;text-transform:uppercase;letter-spacing:0.5px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;color:#fff;}
+  .recapcol-head.left{background:#e23b7a;}
+  .recapcol-head.right{background:#2b6de2;}
+  .recapcol-score{font-size:12px;font-weight:700;opacity:0.95;}
+  .recaptable{width:100%;border-collapse:collapse;font-family:inherit;table-layout:auto;}
+  .recaptable th{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;text-align:left;padding:8px 14px;border-bottom:2px solid #1112;color:#666;}
+  .recaptable td{font-size:15px;padding:9px 14px;border-bottom:2px solid #1110;vertical-align:top;color:#111;}
+  .recaptable tr:last-child td{border-bottom:none;}
+  .recaptable .rc-round{font-weight:800;white-space:nowrap;}
+  .recaptable .rc-result{font-weight:800;text-transform:uppercase;font-size:13px;white-space:nowrap;}
+  .recaptable .rc-result.y{color:#1a9d4e;}
+  .recaptable .rc-result.n{color:#e23b3b;}
+  .recaptable .rc-pts{font-weight:800;text-align:right;white-space:nowrap;}
+  @media(max-width:680px){ .recapcols{grid-template-columns:1fr;} }
+  .recaptable .rc-exp{color:#1a9d4e;font-weight:700;font-size:14px;}
+
+  .nextbtn{margin-top:14px;display:inline-block;background:#e23b3b;color:#fff;border:3px solid #111;border-radius:12px;
+    font-family:inherit;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;padding:12px 28px;
+    cursor:pointer;box-shadow:4px 4px 0 #111;transition:transform .08s;}
+  .nextbtn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 #111;}
+  .nextbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #111;}
+  .nextbtn:disabled{opacity:0.5;cursor:default;}
+
+  /* ===== LEADERBOARD ===== */
+  .lb-tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .lb-tabs-diff{margin-bottom:16px;}
+  .lb-tab{font-family:'Archivo';font-weight:800;font-size:13px;letter-spacing:0.5px;text-transform:uppercase;
+    background:#fff8e0;color:var(--ink);border:2.5px solid var(--ink);border-radius:99px;padding:8px 16px;cursor:pointer;}
+  .lb-tab.sel{background:var(--blue);color:#fff;box-shadow:3px 3px 0 var(--ink);}
+  .lb-tabs-diff .lb-tab{font-size:11px;padding:6px 13px;}
+  .lb-tabs-diff .lb-tab.sel{background:var(--pink);color:var(--ink);}
+  .lb-card{border:3px solid var(--ink);border-radius:14px;background:#fff;overflow:hidden;box-shadow:5px 5px 0 var(--ink);}
+  .lb-table{width:100%;border-collapse:collapse;}
+  .lb-table th{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;text-align:left;
+    padding:11px 16px;border-bottom:3px solid var(--ink);color:#555;background:#ffe14d;}
+  .lb-table td{font-size:17px;padding:11px 16px;border-bottom:2px solid rgba(0,0,0,0.08);color:#111;}
+  .lb-table tr:last-child td{border-bottom:none;}
+  .lb-rank{font-family:'Bangers';font-size:22px;width:56px;}
+  .lb-rank.g1{color:#e6a700;} .lb-rank.g2{color:#8a8a8a;} .lb-rank.g3{color:#b5651d;}
+  .lb-name{font-weight:800;}
+  .lb-score{font-weight:900;text-align:right;color:var(--blue);}
+  .lb-empty{padding:26px 16px;text-align:center;font-weight:700;color:#777;}
+  .lb-me{background:#fff3b0;}
+  .lb-me td{font-weight:900;}
+  .lb-loading{padding:26px 16px;text-align:center;font-weight:700;color:#777;}
+  /* recap placement banner + mini board */
+  .place-banner{margin:6px 0 16px;font-family:'Bangers';font-size:26px;letter-spacing:1px;text-align:center;
+    color:#fff;background:var(--red);border:3px solid var(--ink);border-radius:10px;padding:12px;box-shadow:4px 4px 0 var(--ink);transform:rotate(-1deg);}
+  .place-banner.miss{background:var(--blue);}
+  .mini-lb{margin:0 auto 18px;max-width:420px;}
+</style>
+</head>
+<body>
+<button class="fsbtn" id="fsBtn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+<div class="langtoggle" id="langToggle">
+  <button id="langEn" class="on" onclick="setLang('en')">EN</button>
+  <button id="langDe" onclick="setLang('de')">DE</button>
+</div>
+<canvas id="particleCanvas"></canvas>
+
+<!-- INTRO / TITLE SCREEN (swap #introCanvas for a <video> later if you get one) -->
+<div id="screenIntro">
+  <canvas id="introCanvas"></canvas>
+  <div class="intro-inner">
+    <svg class="intro-mascot" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="40" fill="#ff5cb8" stroke="#0a0a0a" stroke-width="5"/>
+      <circle cx="36" cy="42" r="8" fill="#0a0a0a"/><circle cx="64" cy="42" r="8" fill="#0a0a0a"/>
+      <path d="M30 60 Q50 80 70 60" stroke="#0a0a0a" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M12 26 L24 16 M88 26 L76 16" stroke="#0a0a0a" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+    <div class="intro-brand">LEXARENA</div>
+    <div class="intro-tag" id="introTag">a word duel, drawn loud</div>
+    <button class="intro-start" id="introStartBtn">START</button>
+    <div class="intro-press" id="introPress">PRESS ANY KEY</div>
+  </div>
+  <div class="intro-skip" id="introSkip">SKIP ▸</div>
+</div>
+<div class="wrap">
+
+  <div class="topbar">
+    <svg width="70" height="70" viewBox="0 0 100 100" style="margin-bottom:4px;">
+      <circle cx="50" cy="50" r="40" fill="#ff5cb8" stroke="#0a0a0a" stroke-width="4"/>
+      <circle cx="36" cy="42" r="7" fill="#0a0a0a"/><circle cx="64" cy="42" r="7" fill="#0a0a0a"/>
+      <path d="M32 62 Q50 78 68 62" stroke="#0a0a0a" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M14 28 L24 18 M86 28 L76 18" stroke="#0a0a0a" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div class="brand">LEXARENA</div>
+    <div class="tagline">a word duel, drawn loud</div>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div id="screenMode">
+    <h2 class="sec-title">PICK YOUR DUEL!</h2>
+    <p class="sec-sub">Choose a topic and go toe-to-toe with The Mirror, who cooks up a brand new question every round.</p>
+    <div class="modegrid" id="modeCards"></div>
+    <div class="btnrow" style="margin-top:18px;">
+      <button class="btn-ghost" id="leaderboardBtn">🏆 LEADERBOARD</button>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div id="screenSetup" class="hidden">
+    <h2 class="sec-title">SET THE STAGE</h2>
+    <p class="sec-sub">Drop your name, pick a topic, choose where to start.</p>
+    <div class="card">
+      <div class="field"><label>Player One's Name</label><input type="text" id="p1Input" placeholder="Anonymous" maxlength="14"></div>
+      <div class="field hidden" id="p2Row"><label>Player Two's Name</label><input type="text" id="p2Input" placeholder="Anonymous" maxlength="14"></div>
+      <div class="field">
+        <label>Topic</label>
+        <input type="text" id="topicInput" placeholder="Greek myth, the ocean, chemistry...">
+        <div class="chiprow" id="chips"></div>
+      </div>
+      <div class="field"><label>Starting difficulty</label><div class="diffrow" id="diffRow"></div></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn-ghost" id="backBtn">Back</button>
+      <button class="btn-primary" id="startBtn" disabled>FIGHT!</button>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screenGame" class="hidden">
+    <div class="metabar">
+      <span><span class="meta-k" data-k="metaTopic">TOPIC:</span> <b id="topicLabel">—</b></span>
+      <span><span class="meta-k" data-k="metaDiff">DIFFICULTY:</span> <b id="diffLabel">EASY</b></span>
+      <span><span class="meta-k" data-k="metaRound">ROUND</span> <b id="roundLabel">1</b></span>
+    </div>
+
+    <div class="fighterhud">
+      <div class="hud-box a" id="scoreA">
+        <div class="hud-top"><span class="hud-name" id="scoreALabel">YOU</span><span class="hud-pts" id="scoreAPts">0</span></div>
+        <div class="healthbar-bg"><div class="healthbar-fill" id="healthA" style="width:0%"></div></div>
+      </div>
+      <div class="hud-box b" id="scoreB">
+        <div class="hud-top"><span class="hud-name" id="scoreBLabel">THE MIRROR</span><span class="hud-pts" id="scoreBPts">0</span></div>
+        <div class="healthbar-bg"><div class="healthbar-fill" id="healthB" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div id="mirrorThinking" class="mirror-thinking hidden">
+      <svg width="24" height="24" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#0064ff" stroke="#0a0a0a" stroke-width="5"/><circle cx="36" cy="42" r="7" fill="#0a0a0a"/><circle cx="64" cy="42" r="7" fill="#0a0a0a"/></svg>
+      <span id="mirrorThinkingText">THE MIRROR IS THINKING...</span>
+    </div>
+
+    <div class="qbox">
+      <div class="qlabel" id="qWhoLabel">YOUR TURN</div>
+      <div class="qtext" id="qText">Loading…</div>
+    </div>
+    <div class="timerwrap">
+      <div class="timerbar-bg"><div class="timerbar" id="timerBar" style="width:100%"></div></div>
+      <div class="timertxt" id="timerTxt">60s</div>
+    </div>
+    <textarea id="answerInput" placeholder="TYPE YOUR ANSWER..."></textarea>
+    <div class="btnrow">
+      <button class="btn-ghost" id="quitBtn">Quit</button>
+      <button class="btn-ghost hidden" id="endBtn">END</button>
+      <button class="btn-primary" id="fireBtn">GO!</button>
+    </div>
+    <div id="feedbackBox"></div>
+  </div>
+
+  <!-- RECAP -->
+  <div id="screenRecap" class="hidden">
+    <div class="ko-stamp" id="koStamp">K.O.!</div>
+    <div class="finalbox">
+      <div class="bigverdict" id="finalVerdict">—</div>
+      <div class="sub" id="finalSub">—</div>
+      <div class="final-hud">
+        <div class="hud-box a"><div class="hud-top"><span class="hud-name" id="finalALabel">YOU</span><span class="hud-pts" id="finalAPts">0</span></div></div>
+        <div class="hud-box b"><div class="hud-top"><span class="hud-name" id="finalBLabel">THE MIRROR</span><span class="hud-pts" id="finalBPts">0</span></div></div>
+      </div>
+    </div>
+    <div id="placeBanner"></div>
+    <div id="miniLeaderboard" class="mini-lb"></div>
+    <h2 class="sec-title" style="font-size:22px;">FULL RECAP</h2>
+    <div class="recaplist" id="recapList"></div>
+    <div class="btnrow">
+      <button class="btn-primary" id="playAgainBtn">AGAIN!</button>
+      <button class="btn-ghost" id="menuBtn">Main menu</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div id="screenLeaderboard" class="hidden">
+    <h2 class="sec-title">LEADERBOARD</h2>
+    <p class="sec-sub" id="lbSub">The top 15 runs, per mode.</p>
+    <div class="lb-tabs" id="lbTabs"></div>
+    <div class="lb-tabs lb-tabs-diff" id="lbDiffTabs"></div>
+    <div class="lb-card" id="lbCard">
+      <div class="lb-loading" id="lbBody">…</div>
+    </div>
+    <div class="btnrow" style="margin-top:18px;">
+      <button class="btn-primary" id="lbBackBtn">Main menu</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- VS INTRO OVERLAY -->
+<div id="screenVS" class="hidden">
+  <div class="vs-bg-stripe"></div>
+  <div class="vs-fighters">
+    <div class="fighter-card left" id="vsLeftCard">
+      <svg class="favatar" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ff5cb8" stroke="#0a0a0a" stroke-width="5"/><circle cx="36" cy="42" r="8" fill="#0a0a0a"/><circle cx="64" cy="42" r="8" fill="#0a0a0a"/></svg>
+      <div class="fname" id="vsLeftName">YOU</div>
+    </div>
+    <div class="vs-mid">VS</div>
+    <div class="fighter-card right" id="vsRightCard">
+      <svg class="favatar" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#0064ff" stroke="#0a0a0a" stroke-width="5"/><circle cx="36" cy="42" r="8" fill="#0a0a0a"/><circle cx="64" cy="42" r="8" fill="#0a0a0a"/></svg>
+      <div class="fname" id="vsRightName">THE MIRROR</div>
+    </div>
+  </div>
+  <div class="vs-topic" id="vsTopic">TOPIC: —</div>
+  <div class="vs-sub" id="vsSub">Tap anywhere to begin</div>
+  <div class="vs-fight-stamp">FIGHT!</div>
+</div>
+
+<div class="roundbanner" id="roundBanner">ROUND 1</div>
+<div class="streakflash" id="streakFlash"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ===== SOUND ===== */
+const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+let actx=null;
+function ctx(){ if(!actx) actx=new AudioCtxClass(); return actx; }
+function beep(freq,dur,type='square',vol=0.07,delay=0){
+  try{ const c=ctx(); const o=c.createOscillator(); const g=c.createGain();
+    o.type=type; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(c.destination);
+    const t=c.currentTime+delay; o.start(t); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur); o.stop(t+dur+0.02);
+  }catch(e){}
+}
+const sfx={
+  click:()=>beep(560,0.05,'square',0.06),
+  correct:()=>{beep(659,0.08,'square',0.08,0);beep(880,0.1,'square',0.08,0.07);beep(1100,0.13,'square',0.08,0.15);},
+  wrong:()=>{beep(200,0.18,'sawtooth',0.08,0);beep(140,0.2,'sawtooth',0.08,0.09);},
+  streak:()=>{beep(700,0.06,'square',0.09,0);beep(950,0.08,'square',0.09,0.06);beep(1250,0.12,'square',0.09,0.12);},
+  win:()=>{[523,659,880,1100,1318].forEach((f,i)=>beep(f,0.18,'square',0.08,i*0.1));},
+  vswhoosh:()=>{beep(150,0.3,'sawtooth',0.07,0);beep(100,0.25,'sawtooth',0.06,0.1);},
+  fightstamp:()=>{beep(80,0.18,'square',0.12,0);beep(60,0.22,'square',0.1,0.05);},
+  roundgo:()=>{beep(440,0.1,'square',0.08,0);beep(660,0.14,'square',0.08,0.1);},
+  ko:()=>{[300,250,200,150].forEach((f,i)=>beep(f,0.2,'sawtooth',0.1,i*0.12));}
+};
+
+/* ===== SCREEN SHAKE ===== */
+function shakeScreen(){ document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
+
+/* ===== PARTICLE BURST ===== */
+const pCanvas=$('particleCanvas'); const pCtx=pCanvas.getContext('2d');
+function resizeCanvas(){ pCanvas.width=window.innerWidth; pCanvas.height=window.innerHeight; }
+window.addEventListener('resize',resizeCanvas); resizeCanvas();
+let particles=[];
+function burstParticles(color,count=26){
+  const cx=window.innerWidth/2, cy=window.innerHeight*0.42;
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2; const speed=2+Math.random()*7;
+    particles.push({
+      x:cx,y:cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-2,
+      life:1,decay:0.012+Math.random()*0.02,size:4+Math.random()*7,color,
+      rot:Math.random()*360, vrot:(Math.random()-0.5)*14
+    });
+  }
+}
+function animateParticles(){
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.18; p.life-=p.decay; p.rot+=p.vrot;
+    pCtx.save();
+    pCtx.translate(p.x,p.y); pCtx.rotate(p.rot*Math.PI/180);
+    pCtx.globalAlpha=Math.max(0,p.life);
+    pCtx.fillStyle=p.color;
+    pCtx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+    pCtx.restore();
+  });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+/* ===== DATA ===== */
+
+/* ===== I18N ===== */
+let lang = 'en';
+const STRINGS = {
+  en: {
+    tagline: 'a word duel, drawn loud',
+    introStart: 'START', introPress: 'PRESS ANY KEY', introSkip: 'SKIP ▸',
+    modeTitle: 'PICK YOUR DUEL!',
+    modeSub: 'Choose a topic and go toe-to-toe with The Mirror, who cooks up a brand new question every round.',
+    setupTitle: 'SET THE STAGE',
+    setupSub: 'Drop your name, pick a topic, choose where to start.',
+    p1Label: "Player One's Name", p2Label: "Player Two's Name",
+    namePlaceholder: 'Anonymous',
+    topicLabel: 'Topic', topicPlaceholder: 'Greek myth, the ocean, chemistry...',
+    diffLabel: 'Starting difficulty',
+    back: 'Back', fight: 'FIGHT!',
+    metaTopic: 'TOPIC:', metaDiff: 'DIFFICULTY:', metaRound: 'ROUND',
+    mirrorThinking: 'THE MIRROR IS THINKING...',
+    answerPlaceholder: 'TYPE YOUR ANSWER...',
+    quit: 'Quit', go: 'GO!',
+    endRun: 'END', endConfirm: 'End your run and see the recap?',
+    fullRecap: 'FULL RECAP', again: 'AGAIN!', mainMenu: 'Main menu',
+    leaderboard: '🏆 LEADERBOARD', lbTitle: 'LEADERBOARD', lbSub: 'The top 15 runs, per mode.',
+    lbRank: 'RANK', lbName: 'NAME', lbScore: 'SCORE',
+    lbEmpty: 'No runs yet — be the first!', lbLoading: 'Loading…',
+    lbUnavailable: 'Leaderboard unavailable (backend offline).',
+    lbTabSolo: 'SOLO', lbTabMirror: 'VS MIRROR', lbTabPlayer: 'VS PLAYER',
+    placeIn: (r)=>`YOU'RE #${r}!`, placeMiss: 'GOOD RUN!',
+    vsBegin: 'Tap anywhere to begin', vsTopic: 'TOPIC:',
+    mirror: 'THE MIRROR', you: 'YOU',
+    yourTurn: 'YOUR TURN', turnSuffix: "'S TURN",
+    correct: 'CORRECT!', wrong: 'WRONG!',
+    correctShort: 'CORRECT', wrongShort: 'WRONG',
+    timeUp: 'TIME UP! No answer recorded.',
+    noTransmission: '(NO TRANSMISSION)', mirrorWrote: 'THE MIRROR WROTE',
+    seeResults: 'SEE RESULTS!', next: 'NEXT!',
+    pts: 'PTS',
+    runOver: (s)=>`RUN OVER — ${s} PTS`,
+    soloSub: (c,t)=>`${c} correct out of ${t}.`,
+    wins: (n)=>`${n} WINS!`, draw: 'DRAW!',
+    vsScoreLine: (n1,s1,n2,s2)=>`${n1}: ${s1} PTS · ${n2}: ${s2} PTS`,
+    corrCount: (c,t)=>`${c}/${t} correct`,
+    thRnd:'RND', thResult:'RESULT', thAnswer:'ANSWER', thExpected:'EXPECTED', thPts:'PTS',
+    quitConfirm: 'Quit this duel and return to the menu?',
+    modes: {
+      solo:{name:'SOLO SMASH', desc:'No round limit. Just you vs The Mirror — it ramps up the longer you last.'},
+      vs_mirror:{name:'VS THE MIRROR', desc:'7 rounds. You and The Mirror each answer your own question.'},
+      vs_player:{name:'VS A FRIEND', desc:'7 rounds, two players, one device. The Mirror referees only.'},
+    },
+    diffs:{easy:'EASY', medium:'MEDIUM', hard:'HARD', advanced:'ADVANCED'},
+    suggestions:['Nature','Space & planets','Greek myth','The ocean','Chemistry','Music','Weather','Emotions'],
+  },
+  de: {
+    tagline: 'ein Wortduell, laut gezeichnet',
+    introStart: 'START', introPress: 'BELIEBIGE TASTE DRÜCKEN', introSkip: 'ÜBERSPRINGEN ▸',
+    modeTitle: 'WÄHLE DEIN DUELL!',
+    modeSub: 'Wähle ein Thema und tritt gegen den Spiegel an, der jede Runde eine brandneue Frage ausheckt.',
+    setupTitle: 'BÜHNE BEREITEN',
+    setupSub: 'Gib deinen Namen ein, wähle ein Thema und leg den Startpunkt fest.',
+    p1Label: 'Name von Spieler Eins', p2Label: 'Name von Spieler Zwei',
+    namePlaceholder: 'Anonym',
+    topicLabel: 'Thema', topicPlaceholder: 'Griechische Mythen, das Meer, Chemie...',
+    diffLabel: 'Startschwierigkeit',
+    back: 'Zurück', fight: 'KAMPF!',
+    metaTopic: 'THEMA:', metaDiff: 'SCHWIERIGKEIT:', metaRound: 'RUNDE',
+    mirrorThinking: 'DER SPIEGEL DENKT NACH...',
+    answerPlaceholder: 'GIB DEINE ANTWORT EIN...',
+    quit: 'Beenden', go: 'LOS!',
+    endRun: 'ENDE', endConfirm: 'Lauf beenden und die Übersicht ansehen?',
+    fullRecap: 'GESAMTE ÜBERSICHT', again: 'NOCHMAL!', mainMenu: 'Hauptmenü',
+    leaderboard: '🏆 BESTENLISTE', lbTitle: 'BESTENLISTE', lbSub: 'Die 15 besten Läufe, pro Modus.',
+    lbRank: 'RANG', lbName: 'NAME', lbScore: 'PUNKTE',
+    lbEmpty: 'Noch keine Läufe — sei der Erste!', lbLoading: 'Lädt…',
+    lbUnavailable: 'Bestenliste nicht verfügbar (Backend offline).',
+    lbTabSolo: 'SOLO', lbTabMirror: 'GEGEN SPIEGEL', lbTabPlayer: 'GEGEN SPIELER',
+    placeIn: (r)=>`DU BIST #${r}!`, placeMiss: 'GUTER LAUF!',
+    vsBegin: 'Tippe irgendwo, um zu starten', vsTopic: 'THEMA:',
+    mirror: 'DER SPIEGEL', you: 'DU',
+    yourTurn: 'DU BIST DRAN', turnSuffix: ' IST DRAN',
+    correct: 'RICHTIG!', wrong: 'FALSCH!',
+    correctShort: 'RICHTIG', wrongShort: 'FALSCH',
+    timeUp: 'ZEIT UM! Keine Antwort erfasst.',
+    noTransmission: '(KEINE ÜBERTRAGUNG)', mirrorWrote: 'DER SPIEGEL SCHRIEB',
+    seeResults: 'ERGEBNISSE ANZEIGEN!', next: 'WEITER!',
+    pts: 'PKT',
+    runOver: (s)=>`LAUF VORBEI — ${s} PKT`,
+    soloSub: (c,t)=>`${c} von ${t} richtig.`,
+    wins: (n)=>`${n} GEWINNT!`, draw: 'UNENTSCHIEDEN!',
+    vsScoreLine: (n1,s1,n2,s2)=>`${n1}: ${s1} PKT · ${n2}: ${s2} PKT`,
+    corrCount: (c,t)=>`${c}/${t} richtig`,
+    thRnd:'RDE', thResult:'ERGEBNIS', thAnswer:'ANTWORT', thExpected:'ERWARTET', thPts:'PKT',
+    quitConfirm: 'Dieses Duell beenden und zum Menü zurückkehren?',
+    modes: {
+      solo:{name:'SOLO SMASH', desc:'Kein Rundenlimit. Nur du gegen den Spiegel — es wird schwerer, je länger du durchhältst.'},
+      vs_mirror:{name:'GEGEN DEN SPIEGEL', desc:'7 Runden. Du und der Spiegel beantwortet jeweils eine eigene Frage.'},
+      vs_player:{name:'GEGEN EINEN FREUND', desc:'7 Runden, zwei Spieler, ein Gerät. Der Spiegel ist nur Schiedsrichter.'},
+    },
+    diffs:{easy:'EINFACH', medium:'MITTEL', hard:'SCHWER', advanced:'EXPERTE'},
+    suggestions:['Natur','Weltraum & Planeten','Griechische Mythen','Das Meer','Chemie','Musik','Wetter','Gefühle'],
+  },
+};
+function t(key){ return STRINGS[lang][key]; }
+
+const MODES=[
+  {id:'solo',name:'SOLO SMASH',cls:'m1',icon:'1P',desc:'No round limit. Just you vs The Mirror — it ramps up the longer you last.'},
+  {id:'vs_mirror',name:'VS THE MIRROR',cls:'m2',icon:'VS',desc:'7 rounds. You and The Mirror each answer your own question.'},
+  {id:'vs_player',name:'VS A FRIEND',cls:'m3',icon:'2P',desc:'7 rounds, two players, one device. The Mirror referees only.'}
+];
+const DIFFS=['easy','medium','hard','advanced'];
+const DIFF_TIME={easy:60,medium:50,hard:40,advanced:30};
+const DIFF_POINTS={easy:5,medium:7,hard:9,advanced:11};
+const SUGGESTIONS=['Nature','Space & planets','Greek myth','The ocean','Chemistry','Music','Weather','Emotions'];
+const WIN_TARGET=30; // health bar fills to this many points = full bar
+const BAR_MAX=120; // bar grows gradually; never instant-maxes
+
+const QUESTION_BANK={
+  easy:[t=>`Name one well-known thing closely associated with ${t}.`,t=>`Give a simple, common example related to ${t}.`],
+  medium:[t=>`Describe a specific concept within ${t} that most people would need a moment to recall.`,t=>`Name something about ${t} that requires more than surface knowledge.`],
+  hard:[t=>`Explain a nuanced, lesser-known fact about ${t} that only enthusiasts would know.`,t=>`Identify a specific term or detail within ${t} that's rarely discussed casually.`],
+  advanced:[t=>`Provide an expert-level fact about ${t} that would only be known by someone with formal training.`,t=>`Describe a highly technical aspect of ${t} that specialists debate.`]
+};
+let askedQuestions=[];
+function genQuestion(topic,diff){
+  const pool=QUESTION_BANK[diff]; let q,tries=0;
+  do{ q=pool[Math.floor(Math.random()*pool.length)](topic); tries++; }while(askedQuestions.includes(q)&&tries<10);
+  askedQuestions.push(q); return q;
+}
+function judgeAnswer(answer){
+  if(!answer || answer.trim().length<2) return {correct:false,reason:'TOO THIN! The Mirror needs more to work with.'};
+  const win=Math.random()<0.62;
+  const w=['POW! Nice answer.','BAM! That lands.','The Mirror approves!','Solid! Well reasoned.'];
+  const l=['NOPE! Too vague.','MISS! Try sharper.','The Mirror shakes its head.','Not quite — try again.'];
+  return {correct:win, reason:(win?w:l)[Math.floor(Math.random()*4)]};
+}
+function mirrorAutoAnswer(){ return Math.random()<0.45; }
+// Fake stand-in for what the Mirror "writes" when answering its own question —
+// only used so the demo (no live backend) has something to show. The real
+// backend supplies the model's actual answer text via mirror_answer.
+const MIRROR_FAKE_ANSWERS=['Photosynthesis','Entropy','Osmosis','Refraction','Symbiosis','Momentum','Gravity','Nostalgia','Equilibrium','Resonance'];
+function genMirrorAnswer(){ return MIRROR_FAKE_ANSWERS[Math.floor(Math.random()*MIRROR_FAKE_ANSWERS.length)]; }
+/* ===== BACKEND ADAPTERS =====
+   Two interchangeable adapters with the same interface. FAKE_BACKEND runs the
+   game offline for demos; REAL_BACKEND talks to the FastAPI server. */
+const FAKE_BACKEND={
+  async newGame(){ askedQuestions=[]; await wait(150); return {ok:true}; },
+  async getQuestion(topic,diff){ await wait(250); return {question:genQuestion(topic,diff)}; },
+  async submitAnswer(answer){ await wait(350); return judgeAnswer(answer); },
+  async mirrorTurn(){
+    await wait(900);
+    const correct=mirrorAutoAnswer();
+    const w=['The Mirror nails it.','Sharp — that holds up.','Correct, and confidently so.'];
+    const l=['The Mirror overreaches here.','Too vague to count.','Close, but not quite right.'];
+    return { correct, mirror_answer: genMirrorAnswer(), reason:(correct?w:l)[Math.floor(Math.random()*w.length)] };
+  }
+};
+
+/* ============================================================
+   REAL BACKEND ADAPTER
+   Confirmed from your project history:
+     - /game/question and /game/mirror-turn are POST with body {}
+     - /game/answer is POST
+     - /game/state is GET
+     - response includes active_side / side fields — read directly,
+       do not track activeSide locally (this was the recap mislabeling bug)
+   TODO before first real run:
+     1. Confirm API_BASE below matches your current backend host:port (config.py).
+     2. Open http://<host>:8001/docs and verify exact field names for:
+        - POST /game/question response (`question` vs `current_challenge.challenge` vs `challenge`?)
+        - POST /game/answer response (`correct` vs `valid`? `reasoning`?)
+     3. Adjust the "ADAPT FIELD" lines below if names differ from your live API.
+   ============================================================ */
+const API_BASE = 'http://127.0.0.1:8001'; // TODO: update to your backend/cluster host:port
+
+async function apiCall(path, body){
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body || {})
+  });
+  if(!res.ok) throw new Error('Backend error ' + res.status + ' on ' + path);
+  return res.json();
+}
+
+const REAL_BACKEND={
+  async newGame(){
+    // Backend expects mode keys: solo / mirror / player
+    const modeMap = { solo:'solo', vs_mirror:'mirror', vs_player:'player' };
+    return apiCall('/game/new', { topic, difficulty, mode: modeMap[mode] || 'solo', language: lang });
+  },
+  async getQuestion(topicArg, diffArg){
+    const data = await apiCall('/game/question', {});
+    const q = data.question || (data.current_challenge && data.current_challenge.challenge) || data.challenge || '(no question returned)';
+    // Server decides whose turn and the round; only p1's difficulty is tracked
+    // client-side (it drives the timer). The Mirror's level is per-turn only.
+    if(data.active_side) activeSide = data.active_side;
+    if(data.round_number) round = data.round_number;
+    if(data.difficulty && data.active_side === 'p1') difficulty = data.difficulty;
+    return { question: q, difficulty: data.difficulty, round_number: data.round_number, active_side: data.active_side };
+  },
+  async submitAnswer(answer){
+    const tt = Math.max(0, DIFF_TIME[turnDifficulty || difficulty] - timeLeft);
+    const data = await apiCall('/game/answer', { player_answer: answer, time_taken: tt });
+    let correct;
+    if(typeof data.was_correct === 'boolean') correct = data.was_correct;
+    else if(typeof data.correct === 'boolean') correct = data.correct;
+    else if(typeof data.valid === 'boolean') correct = data.valid;
+    else if(typeof data.is_correct === 'boolean') correct = data.is_correct;
+    else correct = (data.points_awarded||0) > 0; // fallback: points means correct
+    const reason = data.reasoning || data.reason || (correct ? 'Correct.' : 'Incorrect.');
+    // Pass through everything the server computed
+    return {
+      correct, reason,
+      side: data.side,
+      scores: data.scores,
+      points_awarded: data.points_awarded,
+      next_difficulty: data.next_difficulty,
+      streak: data.streak,
+      streak_bonus: data.streak_bonus,
+      streak_hit: data.streak_hit,
+      answer_example: data.answer_example||data.answer_key||data.correct_answer||data.expected_answer||data.example_answer||'',
+      is_over: data.is_over,
+    };
+  },
+  async mirrorTurn(){
+    const data = await apiCall('/game/mirror-turn', {});
+    let correct;
+    if(typeof data.was_correct === 'boolean') correct = data.was_correct;
+    else if(typeof data.correct === 'boolean') correct = data.correct;
+    else if(typeof data.valid === 'boolean') correct = data.valid;
+    else if(typeof data.is_correct === 'boolean') correct = data.is_correct;
+    else correct = (data.points_awarded||0) > 0; // fallback: points means correct
+    return {
+      correct,
+      reason: data.reasoning || (correct ? 'The Mirror answers correctly.' : 'The Mirror falters.'),
+      side: data.side,
+      scores: data.scores,
+      points_awarded: data.points_awarded,
+      next_difficulty: data.next_difficulty,
+      streak: data.streak,
+      streak_bonus: data.streak_bonus,
+      streak_hit: data.streak_hit,
+      mirror_answer: data.mirror_answer,
+      answer_example: data.answer_example||data.answer_key||data.correct_answer||data.expected_answer||data.example_answer||'',
+      is_over: data.is_over,
+    };
+  }
+};
+
+/* Live play: the real backend is the single source of truth for scores,
+   difficulty, and streaks. */
+const BACKEND = REAL_BACKEND;
+
+/* ===== STATE ===== */
+let mode=null, topic='', p1Name='YOU', p2Name='PLAYER 2', difficulty='easy';
+let round=1, totalRounds=7, scoreA=0, scoreB=0, lossStreak=0, winStreak=0;
+let timerInterval=null, timeLeft=60, currentQ='', activeSide='p1', recap=[], answered=false;
+// Difficulty of the turn on screen: p1's level on a human turn, the Mirror's
+// fixed level on its turn. Kept separate so they never overwrite each other.
+let turnDifficulty='easy';
+let startDifficulty='easy';  // difficulty a run began on (for the leaderboard)
+
+/* ===== SETUP SCREEN ===== */
+// Render the three mode cards (Solo / VS Mirror / VS Player).
+function buildModeCards(){
+  const c=$('modeCards'); c.innerHTML='';
+  MODES.forEach(m=>{
+    const tm = t('modes')[m.id] || {name:m.id, desc:''};
+    const d=document.createElement('div'); d.className='modecard '+m.cls; d.tabIndex=0;
+    d.innerHTML=`<div class="burst">${m.icon}</div><div class="body"><div class="name">${tm.name}</div><div class="desc">${tm.desc}</div></div>`;
+    d.onclick=()=>selectMode(m.id);
+    d.onkeydown=e=>{if(e.key==='Enter')selectMode(m.id);};
+    c.appendChild(d);
+  });
+}
+// Pick a mode and move to the setup screen (player-2 field only for VS Player).
+function selectMode(id){
+  sfx.click(); mode=id;
+  $('p2Row').classList.toggle('hidden', id!=='vs_player');
+  $('screenMode').classList.add('hidden'); $('screenSetup').classList.remove('hidden');
+}
+// Render the clickable topic-suggestion chips.
+function buildChips(){
+  const c=$('chips'); c.innerHTML='';
+  t('suggestions').forEach(s=>{
+    const b=document.createElement('button'); b.className='chip'; b.textContent=s.toUpperCase();
+    b.onclick=()=>{ $('topicInput').value=s; validateSetup(); sfx.click(); };
+    c.appendChild(b);
+  });
+}
+// Render the four starting-difficulty buttons.
+function buildDiffRow(){
+  const c=$('diffRow'); c.innerHTML='';
+  DIFFS.forEach((d,i)=>{
+    const b=document.createElement('button'); b.className='diffbtn'+(d===difficulty?' sel':(i===0&&!DIFFS.includes(difficulty)?' sel':''));
+    b.dataset.diff=d;
+    b.textContent=t('diffs')[d];
+    b.onclick=()=>{ difficulty=d; [...c.children].forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); sfx.click(); };
+    c.appendChild(b);
+  });
+}
+// Enable FIGHT only once a topic is entered.
+function validateSetup(){ $('startBtn').disabled = $('topicInput').value.trim().length<2; }
+$('backBtn').onclick=()=>{ sfx.click(); $('screenSetup').classList.add('hidden'); $('screenMode').classList.remove('hidden'); };
+
+/* ===== START GAME -> VS INTRO -> GAME ===== */
+$('startBtn').onclick=()=>{
+  if($('startBtn').disabled) return;
+  sfx.click();
+  topic=$('topicInput').value.trim();
+  p1Name=($('p1Input').value.trim()||t('you')).toUpperCase();
+  p2Name=($('p2Input').value.trim()||(lang==='de'?'SPIELER 2':'PLAYER 2')).toUpperCase();
+  // Solo has no opponent, so skip the "VS" duel intro entirely.
+  if(mode==='solo'){ $('screenSetup').classList.add('hidden'); beginActualGame(); }
+  else showVsIntro();
+};
+
+function showVsIntro(){
+  $('screenSetup').classList.add('hidden');
+  const bName = mode==='vs_player' ? p2Name : t('mirror');
+  $('vsLeftName').textContent=p1Name;
+  $('vsRightName').textContent=bName;
+  $('vsTopic').textContent='TOPIC: '+topic.toUpperCase();
+  // reset animation by re-cloning cards
+  const leftCard=$('vsLeftCard'), rightCard=$('vsRightCard');
+  leftCard.style.animation='none'; rightCard.style.animation='none';
+  void leftCard.offsetWidth;
+  leftCard.style.animation=''; rightCard.style.animation='';
+  $('screenVS').classList.remove('hidden');
+  sfx.vswhoosh();
+  setTimeout(()=>sfx.fightstamp(),1400);
+  setTimeout(()=>{ beginActualGame(); }, 2300);
+}
+
+async function beginActualGame(){
+  $('screenVS').classList.add('hidden');
+  round=1; scoreA=0; scoreB=0; lossStreak=0; winStreak=0; recap=[]; activeSide='p1';
+  // Remember the difficulty the run STARTED on — the leaderboard ranks by this
+  // (in Hard/Advanced the live difficulty can ladder mid-run).
+  startDifficulty = difficulty;
+  totalRounds = mode==='solo' ? Infinity : 7;
+  await BACKEND.newGame();
+  $('topicLabel').textContent=topic.toUpperCase();
+  $('scoreALabel').textContent=p1Name;
+  $('scoreBLabel').textContent= mode==='vs_player' ? p2Name : t('mirror');
+  // Solo has no opponent: hide the Mirror score box and show the End button
+  // (revealed only once the first question is answered).
+  const soloMode = (mode==='solo');
+  $('scoreB').classList.toggle('hidden', soloMode);
+  $('endBtn').classList.add('hidden');
+  updateScores();
+  $('screenGame').classList.remove('hidden');
+  showRoundBanner();
+  nextTurn();
+}
+
+// Flash the "ROUND n" banner.
+function showRoundBanner(){
+  const el=$('roundBanner');
+  el.textContent = totalRounds===Infinity ? `${t('metaRound')} ${round}` : `${t('metaRound')} ${round}/${totalRounds}`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  sfx.roundgo();
+}
+
+// Update both score boxes and health bars, highlighting the active side.
+function updateScores(){
+  $('scoreAPts').textContent=scoreA; $('scoreBPts').textContent=scoreB;
+  $('scoreA').classList.toggle('active', activeSide==='p1');
+  $('scoreB').classList.toggle('active', activeSide!=='p1');
+  $('healthA').style.width=Math.min(96,(scoreA/BAR_MAX)*100)+'%';
+  $('healthB').style.width=Math.min(96,(scoreB/BAR_MAX)*100)+'%';
+}
+function clearFeedback(){ $('feedbackBox').innerHTML=''; }
+
+/* ===== TURN FLOW ===== */
+// Load and display the next question; auto-runs the Mirror on its VS-Mirror turn.
+async function nextTurn(){
+  clearFeedback(); answered=false;
+  $('endBtn').classList.add('hidden'); // usable only after answering
+  $('roundLabel').textContent = totalRounds===Infinity ? round : `${round}/${totalRounds}`;
+  $('answerInput').value=''; $('answerInput').disabled=false; $('fireBtn').disabled=false;
+  $('mirrorThinking').classList.add('hidden');
+  $('qWhoLabel').textContent = activeSide==='p1'
+      ? (mode==='vs_player' ? `${p1Name}${t('turnSuffix')}` : t('yourTurn'))
+      : (mode==='vs_player'
+          ? `${p2Name}${t('turnSuffix')}`
+          : `${t('mirror')}${t('turnSuffix')}`);
+  const res=await BACKEND.getQuestion(topic,difficulty);
+  // Label reflects this turn's difficulty (from the server), not the p1 global.
+  turnDifficulty = res.difficulty || difficulty;
+  $('diffLabel').textContent = (t('diffs')[turnDifficulty] || (turnDifficulty||'').toUpperCase());
+  currentQ=res.question; $('qText').textContent=currentQ;
+  if(activeSide!=='p1' && mode==='vs_mirror'){ $('answerInput').disabled=true; $('fireBtn').disabled=true; runMirrorTurn(); }
+  else { startTimer(); $('answerInput').focus(); }
+}
+// Start the countdown for this turn, timed by the turn's difficulty.
+function startTimer(){
+  const tDiff = turnDifficulty || difficulty;
+  clearInterval(timerInterval); timeLeft=DIFF_TIME[tDiff]; renderTimer();
+  timerInterval=setInterval(()=>{ timeLeft--; renderTimer(); if(timeLeft<=0){ clearInterval(timerInterval); submitTurn(true); } },1000);
+}
+// Update the timer bar and text.
+function renderTimer(){
+  const max=DIFF_TIME[turnDifficulty || difficulty]; const pct=Math.max(0,(timeLeft/max)*100);
+  $('timerBar').style.width=pct+'%'; $('timerBar').classList.toggle('warn', timeLeft<=10);
+  $('timerTxt').textContent=Math.max(0,timeLeft)+'s';
+}
+// Run the Mirror's own turn: fetch its answer and score it.
+async function runMirrorTurn(){
+  $('mirrorThinking').classList.remove('hidden');
+  const res=await BACKEND.mirrorTurn();
+  $('mirrorThinking').classList.add('hidden');
+  applyResult(res, t('mirror'), res.mirror_answer, true);
+}
+$('fireBtn').onclick=()=>submitTurn(false);
+$('endBtn').onclick=()=>{
+  if(confirm(t('endConfirm'))){ clearInterval(timerInterval); endGame(); }
+};
+$('answerInput').addEventListener('keydown',e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); submitTurn(false); } });
+// Submit the current answer (or an empty one on timeout) and score it.
+async function submitTurn(timedOut){
+  if(answered) return; answered=true; clearInterval(timerInterval);
+  $('answerInput').disabled=true; $('fireBtn').disabled=true;
+  const text=timedOut? '' : $('answerInput').value;
+  let res;
+  if(timedOut){
+    res = await BACKEND.submitAnswer('');
+    res.reason = t('timeUp');
+  } else {
+    res = await BACKEND.submitAnswer(text);
+  }
+  const who = activeSide==='p1' ? p1Name : p2Name;
+  applyResult(res, who, text);
+}
+
+// Apply a scored turn: effects, scores, streak, recap, feedback, Next button.
+function applyResult(res, who, text, isMirror){
+  const correct = res.correct;
+  shakeScreen();
+  burstParticles(correct ? '#1ecbe1' : '#ff3b3b', correct ? 28 : 16);
+  if(correct) sfx.correct(); else sfx.wrong();
+
+  // Server owns the scores; only apply the adapted level after a p1 turn so the
+  // Mirror's turn can't shift the player's difficulty.
+  if(res.scores){ scoreA = res.scores.p1; scoreB = res.scores.opp; }
+  if(res.next_difficulty && activeSide==='p1') difficulty = res.next_difficulty;
+
+  // Streak flash + sound when the server reports one fired this turn.
+  if(res.streak_hit){
+    flashStreak(res.streak, res.streak_bonus);
+    setTimeout(()=>sfx.streak(),150);
+    burstParticles('#ffb02e',36);
+  }
+
+  recap.push({round, who, correct, text:text||t('noTransmission'), pts:(res.points_awarded||0), expected:(res.answer_example||'')});
+  // On the Mirror's turn, show what it wrote next to the verdict (isMirror only,
+  // so Solo and VS Player feedback is unaffected).
+  const mirrorAnswerHtml = (isMirror && text)
+    ? `<div class="mirroranswer"><span class="malabel">${t('mirrorWrote')}</span>${escapeHtml(text)}</div>`
+    : '';
+  renderFeedback(correct, res.reason, who, mirrorAnswerHtml); updateScores();
+  // Show the Next button so the player can read the result before continuing.
+  showNextButton(res.is_over);
+}
+function bumpDifficulty(success){ /* difficulty now comes from the backend */ }
+// Add the Next / See-results button under the feedback (plus solo End button).
+function showNextButton(isOver){
+  const label = isOver ? t('seeResults') : t('next');
+  const box=$('feedbackBox');
+  const btn=document.createElement('button');
+  btn.className='nextbtn'; btn.textContent=label;
+  btn.onclick=()=>{ sfx.click&&sfx.click(); btn.disabled=true; advance(isOver); };
+  box.appendChild(btn);
+  // Solo: now that this question is answered, allow ending the run.
+  if(mode==='solo' && !isOver){ $('endBtn').classList.remove('hidden'); }
+}
+// Render the correct/wrong verdict card.
+function renderFeedback(correct,reason,who,extraHtml){
+  $('feedbackBox').innerHTML=`<div class="feedback ${correct?'win':'lose'}">${extraHtml||''}<div class="vline">${correct?t('correct'):t('wrong')} — ${who}</div>${reason}</div>`;
+}
+// Show the streak-bonus banner.
+function flashStreak(streak,bonus){
+  const el=$('streakFlash'); el.textContent=`STREAK x${streak}! +${bonus}`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+}
+// Move to the next turn/round, or end the game when the last round is done.
+function advance(isOver){
+  // End if the server says so, OR as a safety net when we've completed the last round.
+  const lastRoundDone =
+    (mode==='solo')
+      ? (round >= totalRounds)
+      : (round >= totalRounds && activeSide==='p2'); // both sides answered the final round
+  if(isOver || lastRoundDone){ endGame(); return; }
+  if(mode==='vs_mirror' || mode==='vs_player'){
+    if(activeSide==='p1'){ activeSide='p2'; nextTurn(); return; }
+    else { activeSide='p1'; round++; showRoundBanner(); }
+  } else { round++; showRoundBanner(); }
+  nextTurn();
+}
+$('quitBtn').onclick=()=>{
+  if(confirm(t('quitConfirm'))){ clearInterval(timerInterval); $('screenGame').classList.add('hidden'); $('screenMode').classList.remove('hidden'); }
+};
+
+/* ===== END GAME & RECAP ===== */
+// Show the recap: verdict, final scores, per-side recap table, then submit.
+function endGame(){
+  clearInterval(timerInterval); $('screenGame').classList.add('hidden'); $('screenRecap').classList.remove('hidden');
+  let verdict,sub;
+  const bName= mode==='vs_player'? p2Name : t('mirror');
+  $('koStamp').style.display = mode==='solo' ? 'none' : 'block';
+  $('koStamp').style.animation='none'; void $('koStamp').offsetWidth; $('koStamp').style.animation='';
+  if(mode==='solo'){
+    verdict=t('runOver')(scoreA);
+    sub=t('soloSub')(recap.filter(r=>r.correct).length, recap.length);
+  } else {
+    if(scoreA>scoreB){ verdict=t('wins')(p1Name); sfx.win(); } else if(scoreB>scoreA){ verdict=t('wins')(bName); sfx.ko(); } else verdict=t('draw');
+    sub=t('vsScoreLine')(p1Name, scoreA, bName, scoreB);
+    sfx.ko();
+  }
+  $('finalVerdict').textContent=verdict; $('finalSub').textContent=sub;
+  $('finalALabel').textContent=p1Name; $('finalAPts').textContent=scoreA;
+  $('finalBLabel').textContent=bName; $('finalBPts').textContent=scoreB;
+  // Solo has no opponent: hide the second final HUD box entirely.
+  const finalBBox = $('finalBLabel').closest('.hud-box');
+  if(finalBBox) finalBBox.classList.toggle('hidden', mode==='solo');
+  const list=$('recapList'); list.innerHTML='';
+  const bNameR = (mode==='vs_player') ? p2Name : t('mirror');
+  const leftRows = recap.filter(r=> r.who===p1Name);
+  const rightRows = recap.filter(r=> r.who!==p1Name);
+  // Build one recap column (round-by-round table) for a side.
+  function colHtml(title, rows, accent){
+    let h=`<div class="recapcol"><div class="recapcol-head ${accent}">${escapeHtml(title)}<span class="recapcol-score">${t('corrCount')(rows.filter(x=>x.correct).length, rows.length)}</span></div>`;
+    h+=`<table class="recaptable"><thead><tr><th>${t('thRnd')}</th><th>${t('thResult')}</th><th>${t('thAnswer')}</th><th>${t('thExpected')}</th><th>${t('thPts')}</th></tr></thead><tbody>`;
+    rows.forEach(r=>{
+      h+=`<tr><td class="rc-round">R${r.round}</td>`+
+         `<td class="rc-result ${r.correct?'y':'n'}">${r.correct?t('correctShort'):t('wrongShort')}</td>`+
+         `<td class="rc-ans">${escapeHtml(r.text)}</td>`+
+         `<td class="rc-exp">${r.expected?escapeHtml(r.expected):'—'}</td>`+
+         `<td class="rc-pts">${r.correct?('+'+(r.pts||0)):'0'}</td></tr>`;
+    });
+    h+='</tbody></table></div>';
+    return h;
+  }
+  const wrap=document.createElement('div'); wrap.className='recapcols';
+  wrap.innerHTML = (mode==='solo')
+    ? colHtml(p1Name, leftRows, 'left')
+    : colHtml(p1Name, leftRows, 'left') + colHtml(bNameR, rightRows, 'right');
+  list.appendChild(wrap);
+
+  // Submit this run to the leaderboard and show placement + a mini board.
+  $('placeBanner').innerHTML=''; $('miniLeaderboard').innerHTML='';
+  submitToLeaderboard();
+}
+
+/* ===== LEADERBOARD ===== */
+// Frontend mode ids -> backend board keys.
+const LB_MODE = { solo:'solo', vs_mirror:'mirror', vs_player:'player' };
+
+// Submit the finished run (both players in VS Player) and show placement.
+async function submitToLeaderboard(){
+  const board = LB_MODE[mode] || 'solo';
+  const diff = startDifficulty || 'easy';
+  try{
+    // Player one's run.
+    const res = await fetch(API_BASE+'/leaderboard', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name: p1Name, mode: board, difficulty: diff, score: scoreA })
+    });
+    if(!res.ok) throw new Error('bad status '+res.status);
+    const data = await res.json();
+    // In VS Player, also submit player two's score to the same board.
+    if(mode==='vs_player'){
+      try{
+        await fetch(API_BASE+'/leaderboard', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name: p2Name, mode: board, difficulty: diff, score: scoreB })
+        });
+      }catch(e){/* non-fatal */}
+    }
+    renderPlacement(data);
+  }catch(e){
+    // Backend offline: don't break the recap, just note it quietly.
+    $('placeBanner').innerHTML =
+      `<div class="place-banner miss">${t('lbUnavailable')}</div>`;
+  }
+}
+
+// Show the player's placement banner + a compact top-5 after a run.
+function renderPlacement(data){
+  const rank = data.rank||0, inTop = !!data.in_top;
+  $('placeBanner').innerHTML =
+    `<div class="place-banner ${inTop?'':'miss'}">${inTop ? t('placeIn')(rank) : t('placeMiss')}</div>`;
+  // Compact top-5 board (highlighting the player's row if they're in it).
+  const top=(data.top||[]).slice(0,5);
+  if(top.length){
+    let h=`<div class="lb-card"><table class="lb-table"><thead><tr>`+
+          `<th>${t('lbRank')}</th><th>${t('lbName')}</th><th style="text-align:right;">${t('lbScore')}</th></tr></thead><tbody>`;
+    top.forEach(r=>{
+      const me = inTop && r.rank===rank && r.name===p1Name;
+      const g = r.rank<=3 ? ' g'+r.rank : '';
+      h+=`<tr class="${me?'lb-me':''}"><td class="lb-rank${g}">${r.rank}</td>`+
+         `<td class="lb-name">${escapeHtml(r.name)}</td>`+
+         `<td class="lb-score">${r.score}</td></tr>`;
+    });
+    h+='</tbody></table></div>';
+    $('miniLeaderboard').innerHTML=h;
+  }
+}
+
+/* ===== LEADERBOARD SCREEN ===== */
+let lbMode='solo';           // backend mode key currently shown
+let lbDiff='easy';           // difficulty currently shown
+// Open the leaderboard screen and load the current mode/difficulty board.
+function openLeaderboard(){
+  try{ sfx.click&&sfx.click(); }catch(e){}
+  $('screenMode').classList.add('hidden');
+  $('screenSetup').classList.add('hidden');
+  $('screenRecap').classList.add('hidden');
+  $('screenLeaderboard').classList.remove('hidden');
+  try{ buildLbTabs(); }catch(e){ console.error(e); }
+  try{ buildLbDiffTabs(); }catch(e){ console.error(e); }
+  try{ loadLbBoard(); }catch(e){ console.error(e); }
+}
+// Return to the main menu.
+function closeLeaderboard(){
+  try{ sfx.click&&sfx.click(); }catch(e){}
+  $('screenLeaderboard').classList.add('hidden');
+  $('screenMode').classList.remove('hidden');
+}
+// Render the mode tabs (Solo / VS Mirror / VS Player).
+function buildLbTabs(){
+  const tabs=[['solo',t('lbTabSolo')],['mirror',t('lbTabMirror')],['player',t('lbTabPlayer')]];
+  const c=$('lbTabs'); c.innerHTML='';
+  tabs.forEach(([key,label])=>{
+    const b=document.createElement('button');
+    b.className='lb-tab'+(key===lbMode?' sel':'');
+    b.textContent=label;
+    b.onclick=()=>{ lbMode=key; try{sfx.click&&sfx.click();}catch(e){} buildLbTabs(); loadLbBoard(); };
+    c.appendChild(b);
+  });
+}
+// Render the difficulty sub-tabs.
+function buildLbDiffTabs(){
+  const diffs=['easy','medium','hard','advanced'];
+  const c=$('lbDiffTabs'); c.innerHTML='';
+  diffs.forEach(key=>{
+    const b=document.createElement('button');
+    b.className='lb-tab'+(key===lbDiff?' sel':'');
+    b.textContent=t('diffs')[key];
+    b.onclick=()=>{ lbDiff=key; try{sfx.click&&sfx.click();}catch(e){} buildLbDiffTabs(); loadLbBoard(); };
+    c.appendChild(b);
+  });
+}
+// Fetch and render the selected board (falls back gracefully if offline).
+async function loadLbBoard(){
+  const card=$('lbCard');
+  card.innerHTML=`<div class="lb-loading">${t('lbLoading')}</div>`;
+  try{
+    const res=await fetch(API_BASE+'/leaderboard?mode='+encodeURIComponent(lbMode)+'&difficulty='+encodeURIComponent(lbDiff));
+    if(!res.ok) throw new Error('bad status '+res.status);
+    const data=await res.json();
+    renderLbTable(data.top||[]);
+  }catch(e){
+    card.innerHTML=`<div class="lb-empty">${t('lbUnavailable')}</div>`;
+  }
+}
+// Render the full top-15 table for the selected board.
+function renderLbTable(rows){
+  const card=$('lbCard');
+  if(!rows.length){
+    card.innerHTML=`<div class="lb-empty">${t('lbEmpty')}</div>`;
+    return;
+  }
+  let h=`<table class="lb-table"><thead><tr>`+
+        `<th>${t('lbRank')}</th><th>${t('lbName')}</th><th style="text-align:right;">${t('lbScore')}</th></tr></thead><tbody>`;
+  rows.forEach(r=>{
+    const g = r.rank<=3 ? ' g'+r.rank : '';
+    h+=`<tr><td class="lb-rank${g}">${r.rank}</td>`+
+       `<td class="lb-name">${escapeHtml(r.name)}</td>`+
+       `<td class="lb-score">${r.score}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  card.innerHTML=h;
+}
+$('leaderboardBtn').onclick=openLeaderboard;
+$('lbBackBtn').onclick=closeLeaderboard;
+
+/* ===== FULLSCREEN TOGGLE (kiosk mode for the exhibition) ===== */
+(function(){
+  const btn=$('fsBtn'); if(!btn) return;
+  const root=document.documentElement;
+  function isFs(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+  function enter(){
+    if(root.requestFullscreen) root.requestFullscreen();
+    else if(root.webkitRequestFullscreen) root.webkitRequestFullscreen();  // Safari
+  }
+  function exit(){
+    if(document.exitFullscreen) document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+  function sync(){ btn.textContent = isFs() ? '\u2716' : '\u26F6'; btn.title = isFs()?'Exit fullscreen':'Fullscreen'; }
+  btn.onclick=function(){
+    try{ sfx.click&&sfx.click(); }catch(e){}
+    try{ isFs() ? exit() : enter(); }catch(e){ console.error(e); }
+  };
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+  sync();
+})();
+// Escape user text before inserting into HTML.
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+$('playAgainBtn').onclick=()=>{ $('screenRecap').classList.add('hidden'); $('screenSetup').classList.remove('hidden'); };
+$('menuBtn').onclick=()=>{ $('screenRecap').classList.add('hidden'); $('screenMode').classList.remove('hidden'); };
+
+/* ===== LANGUAGE ===== */
+// Apply the current language to all static UI text.
+function applyStaticLang(){
+  document.documentElement.lang = lang;
+  // Toggle button active states
+  $('langEn').classList.toggle('on', lang==='en');
+  $('langDe').classList.toggle('on', lang==='de');
+  // Header
+  const tag=document.querySelector('.tagline'); if(tag) tag.textContent=t('tagline');
+  // Intro screen
+  const itag=$('introTag'); if(itag) itag.textContent=t('tagline');
+  const isb=$('introStartBtn'); if(isb) isb.textContent=t('introStart');
+  const ipr=$('introPress'); if(ipr) ipr.textContent=t('introPress');
+  const isk=$('introSkip'); if(isk) isk.textContent=t('introSkip');
+  // Mode screen
+  const mt=document.querySelector('#screenMode .sec-title'); if(mt) mt.textContent=t('modeTitle');
+  const ms=document.querySelector('#screenMode .sec-sub'); if(ms) ms.textContent=t('modeSub');
+  // Setup screen
+  const st=document.querySelector('#screenSetup .sec-title'); if(st) st.textContent=t('setupTitle');
+  const ss=document.querySelector('#screenSetup .sec-sub'); if(ss) ss.textContent=t('setupSub');
+  const labels=document.querySelectorAll('#screenSetup .field label');
+  if(labels[0]) labels[0].textContent=t('p1Label');
+  if(labels[1]) labels[1].textContent=t('p2Label');
+  if(labels[2]) labels[2].textContent=t('topicLabel');
+  if(labels[3]) labels[3].textContent=t('diffLabel');
+  $('p1Input').placeholder=t('namePlaceholder');
+  $('p2Input').placeholder=t('namePlaceholder');
+  $('topicInput').placeholder=t('topicPlaceholder');
+  $('backBtn').textContent=t('back');
+  $('startBtn').textContent=t('fight');
+  // Game screen static bits
+  document.querySelectorAll('#screenGame .meta-k').forEach(el=>{ el.textContent=t(el.dataset.k); });
+  const mth=$('mirrorThinkingText'); if(mth) mth.textContent=t('mirrorThinking');
+  $('answerInput').placeholder=t('answerPlaceholder');
+  $('quitBtn').textContent=t('quit');
+  $('fireBtn').textContent=t('go');
+  const eb=$('endBtn'); if(eb) eb.textContent=t('endRun');
+  // Recap screen
+  const rt=document.querySelector('#screenRecap .sec-title'); if(rt) rt.textContent=t('fullRecap');
+  $('playAgainBtn').textContent=t('again');
+  $('menuBtn').textContent=t('mainMenu');
+  // Leaderboard screen + menu button
+  const lbBtn=$('leaderboardBtn'); if(lbBtn) lbBtn.textContent=t('leaderboard');
+  const lbT=document.querySelector('#screenLeaderboard .sec-title'); if(lbT) lbT.textContent=t('lbTitle');
+  const lbS=$('lbSub'); if(lbS) lbS.textContent=t('lbSub');
+  const lbBack=$('lbBackBtn'); if(lbBack) lbBack.textContent=t('mainMenu');
+  // If the leaderboard screen is currently open, re-render its tabs/table.
+  if(!$('screenLeaderboard').classList.contains('hidden')){ buildLbTabs(); buildLbDiffTabs(); loadLbBoard(); }
+  // VS overlay
+  const vsub=$('vsSub'); if(vsub) vsub.textContent=t('vsBegin');
+  // Dynamic lists that depend on language
+  buildModeCards(); buildChips(); buildDiffRow();
+}
+// Switch language (blocked mid-match so the UI and backend stay in sync).
+function setLang(next){
+  if(next===lang) return;
+  const inGame = !$('screenGame').classList.contains('hidden')
+              || !$('screenVS').classList.contains('hidden');
+  if(inGame){
+    const el=$('langToggle'); el.style.transition='transform .1s'; el.style.transform='translateX(-4px)';
+    setTimeout(()=>{ el.style.transform=''; }, 120);
+    return;
+  }
+  lang=next;
+  if(typeof sfx!=='undefined' && sfx.click) sfx.click();
+  applyStaticLang();
+}
+
+/* ===== INIT ===== */
+// Build the initial screens (each guarded so one failure can't blank the page).
+try{ buildModeCards(); }catch(e){ console.error('buildModeCards',e); }
+try{ buildChips(); }catch(e){ console.error('buildChips',e); }
+try{ buildDiffRow(); }catch(e){ console.error('buildDiffRow',e); }
+try{ applyStaticLang(); }catch(e){ console.error('applyStaticLang',e); }
+try{
+  $('topicInput').addEventListener('input',validateSetup);
+  $('topicInput').addEventListener('keydown',e=>{ if(e.key==='Enter' && !$('startBtn').disabled) $('startBtn').click(); });
+}catch(e){ console.error('topicInput listeners',e); }
+
+/* ===== INTRO / TITLE SCREEN =====
+   Cinematic canvas reel that settles into the title, then a looping backdrop.
+   To use a real video instead, replace the #introCanvas element with:
+     <video id="introVideo" autoplay muted loop playsinline>
+       <source src="intro.mp4" type="video/mp4">
+     </video>
+   and delete the introReel() block below. The dismiss logic stays as-is. */
+(function introReel(){
+  const cv=$('introCanvas'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const screen=$('screenIntro');
+  let W,H,dpr=1;
+  const COLORS=['#ff2b3c','#0064ff','#ff5cb8','#00c46a','#ffffff'];
+
+  // Backdrop elements for the TITLE phase (built on resize).
+  let dots=[], bursts=[];
+  function resize(){
+    dpr=Math.min(window.devicePixelRatio||1, 2);
+    W=cv.offsetWidth; H=cv.offsetHeight;
+    cv.width=W*dpr; cv.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    dots=[]; const gap=46;
+    for(let y=-gap;y<H+gap;y+=gap) for(let x=-gap;x<W+gap;x+=gap)
+      dots.push({x,y,r:3+Math.random()*4,ph:Math.random()*Math.PI*2});
+    bursts=[];
+    for(let i=0;i<7;i++) bursts.push({
+      x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*0.25, vy:(Math.random()-.5)*0.25,
+      s:26+Math.random()*46, rot:(Math.random()-.5)*0.6,
+      col:COLORS[i%COLORS.length], word:['POW','BAM','ZAP','WOW','BOOM','ZING','WHAM'][i%7],
+    });
+  }
+  resize(); window.addEventListener('resize',resize);
+
+  // ---- helpers ----
+  const cx=()=>W/2, cy=()=>H/2;
+  function clamp01(v){ return v<0?0:v>1?1:v; }
+  function ease(t){ return t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+  function easeOutBack(t){ const c=1.70158+1; return 1+ (c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2); }
+  function star(x,y,r,spikes,rot,fill,stroke,lw){
+    ctx.save(); ctx.translate(x,y); ctx.rotate(rot||0);
+    ctx.beginPath();
+    for(let i=0;i<spikes*2;i++){ const rr=(i%2===0)?r:r*0.62, a=(i/(spikes*2))*Math.PI*2;
+      ctx[i===0?'moveTo':'lineTo'](Math.cos(a)*rr, Math.sin(a)*rr); }
+    ctx.closePath();
+    if(fill){ctx.fillStyle=fill;ctx.fill();}
+    if(stroke){ctx.lineWidth=lw||3;ctx.strokeStyle=stroke;ctx.stroke();}
+    ctx.restore();
+  }
+  function mascot(x,y,scale,eyeOpen,mouth){
+    ctx.save(); ctx.translate(x,y); ctx.scale(scale,scale);
+    ctx.beginPath(); ctx.arc(0,0,40,0,Math.PI*2);
+    ctx.fillStyle='#ff5cb8'; ctx.fill(); ctx.lineWidth=5; ctx.strokeStyle='#0a0a0a'; ctx.stroke();
+    const eh=Math.max(0.06,eyeOpen)*8;
+    ctx.fillStyle='#0a0a0a';
+    ctx.save(); ctx.translate(-14,-8); ctx.scale(1,eh/8); ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.translate(14,-8); ctx.scale(1,eh/8); ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.fill(); ctx.restore();
+    if(mouth>0){ ctx.beginPath(); ctx.moveTo(-20,10); ctx.quadraticCurveTo(0, 10+mouth*20, 20,10);
+      ctx.lineWidth=5; ctx.strokeStyle='#0a0a0a'; ctx.lineCap='round'; ctx.stroke(); }
+    else if(mouth<0){ ctx.beginPath(); ctx.moveTo(-18,16); ctx.quadraticCurveTo(0, 16+mouth*16, 18,16);
+      ctx.lineWidth=5; ctx.strokeStyle='#0a0a0a'; ctx.lineCap='round'; ctx.stroke(); }
+    ctx.restore();
+  }
+  function comicText(txt,x,y,size,fill,stroke){
+    ctx.save(); ctx.font=`900 ${size}px 'Bangers', Archivo, sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.lineJoin='round'; ctx.lineWidth=size*0.14; ctx.strokeStyle=stroke||'#0a0a0a';
+    ctx.strokeText(txt,x,y); ctx.fillStyle=fill||'#fff'; ctx.fillText(txt,x,y);
+    ctx.restore();
+  }
+  function roundRect(x,y,w,h,r,fill,stroke){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+    if(fill)ctx.fill(); if(stroke)ctx.stroke();
+  }
+
+  // ---- scene timings (ms) ----
+  const T = { s1:5000, s2:5000, s3:5000, s4:5000 };
+  const REEL_END = T.s1+T.s2+T.s3+T.s4;
+  let start=null, phase='reel', running=true, litFired=false;
+
+  function drawReel(e){
+    ctx.clearRect(0,0,W,H);
+
+    // SCENE 1: black, eyes blink open, face fades in (resolves early, then idles)
+    if(e < T.s1){
+      const p=e/T.s1;
+      // Core animation finishes in the first ~40% of the scene.
+      const fp = clamp01(p/0.4);
+      const eyeOpen = clamp01((fp-0.15)/0.5);
+      const faceFade = clamp01((fp-0.5)/0.5);
+      // Idle: once the face is in, let it bob and blink gently for the rest.
+      const idleBob = faceFade>=1 ? Math.sin(e/380)*6 : 0;
+      const blink = faceFade>=1 ? (Math.sin(e/900)>0.96 ? 0.15 : 1) : 1;
+      ctx.globalAlpha = faceFade;
+      mascot(cx(), cy()+idleBob, 1.3, blink, faceFade*0.6);
+      ctx.globalAlpha = 1;
+      if(faceFade<1){
+        ctx.globalAlpha=1-faceFade; ctx.fillStyle='#0064ff';
+        const eh=eyeOpen*10;
+        ctx.save(); ctx.translate(cx()-18,cy()-10); ctx.scale(1,eh/10); ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill(); ctx.restore();
+        ctx.save(); ctx.translate(cx()+18,cy()-10); ctx.scale(1,eh/10); ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill(); ctx.restore();
+        ctx.globalAlpha=1;
+      }
+      return;
+    }
+
+    if(!litFired){ litFired=true; screen.classList.add('lit'); if(typeof sfx!=='undefined'&&sfx.roundgo) sfx.roundgo(); }
+
+    // SCENE 2: bursts explode outward, then gently orbit to fill the window
+    if(e < T.s1+T.s2){
+      const p=(e-T.s1)/T.s2;
+      const fp = ease(clamp01(p/0.4));     // explosion done in first ~40%
+      const idle = clamp01((p-0.4)/0.6);   // drift factor for the rest
+      const mBob = Math.sin(e/360)*6;
+      mascot(cx(), cy()-10+mBob, 1.0+0.3*(1-fp), 1, 0.6);
+      const n=9;
+      for(let i=0;i<n;i++){
+        const a=(i/n)*Math.PI*2 + fp*0.5 + idle*0.4 + Math.sin(e/700+i)*0.05;
+        const dist=fp*Math.min(W,H)*0.55 + Math.sin(e/500+i)*8*idle;
+        const bx=cx()+Math.cos(a)*dist, by=cy()+Math.sin(a)*dist;
+        const s=(18+ (i%3)*10) * (0.4+fp*0.8) * (1+0.08*Math.sin(e/300+i));
+        star(bx,by,s,10,a, COLORS[i%COLORS.length], '#0a0a0a', 3);
+        if(fp>0.4){ ctx.globalAlpha=clamp01((fp-0.4)/0.6);
+          comicText(['POW','BAM','ZAP','WOW','ZING','BOOM','WHAM','KA','BIFF'][i%9], bx,by, s*0.5,
+                    (i%COLORS.length===4)?'#0a0a0a':'#fff','#0a0a0a'); ctx.globalAlpha=1; }
+      }
+      return;
+    }
+
+    // SCENE 3: LEXARENA drops in letter by letter, then bobs to fill the window
+    if(e < T.s1+T.s2+T.s3){
+      const p=(e-T.s1-T.s2)/T.s3;
+      const fp=clamp01(p/0.5);           // all letters landed by halfway
+      const wordBob = fp>=1 ? Math.sin(e/340)*7 : 0;
+      const size=Math.min(W*0.12, 84);
+      ctx.save();
+      ctx.font=`900 ${size}px 'Bangers', Archivo, sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      const word='LEXARENA';
+      const gap=size*0.06;               // a little breathing space between letters
+      // Real advance width per letter, so nothing overlaps.
+      const adv=[...word].map(ch=>ctx.measureText(ch).width);
+      const total=adv.reduce((a,b)=>a+b,0) + gap*(word.length-1);
+      // Center of each letter along the baseline.
+      const centers=[]; let cursor=cx()-total/2;
+      for(let i=0;i<word.length;i++){ centers.push(cursor+adv[i]/2); cursor+=adv[i]+gap; }
+      const per=1/word.length;
+      ctx.lineJoin='round'; ctx.lineWidth=size*0.16; ctx.strokeStyle='#0a0a0a';
+      for(let i=0;i<word.length;i++){
+        const lp=clamp01((fp - i*per*0.7)/per);
+        if(lp<=0) continue;
+        const yoff=(1-easeOutBack(lp))*-60 + wordBob;
+        ctx.globalAlpha=lp;
+        ctx.strokeText(word[i], centers[i], cy()+yoff);
+        ctx.fillStyle='#fff'; ctx.fillText(word[i], centers[i], cy()+yoff);
+        if(lp>0.05 && lp<0.5){ star(centers[i], cy()+size*0.45, 20*(1-lp), 8, i, '#ffe14d','#0a0a0a',3); }
+      }
+      ctx.globalAlpha=1; ctx.restore();
+      return;
+    }
+
+    // SCENE 4: quick gameplay montage (each beat animates across its window)
+    {
+      const p=(e-T.s1-T.s2-T.s3)/T.s4;
+      if(p<0.25){
+        const q=p/0.25, ep=easeOutBack(clamp01(q));
+        const x=cx()-140+ (1-ep)*W*0.5;
+        const wob=Math.sin(e/260)*0.03; // gentle card wobble once it's in
+        ctx.save(); ctx.translate(x,cy()); ctx.rotate(-0.03 + (q>0.8?wob:0));
+        ctx.fillStyle='#fff'; ctx.strokeStyle='#0a0a0a'; ctx.lineWidth=4;
+        roundRect(-140,-46,280,92,8,true,true);
+        comicText('?', 0, 0, 54+ (q>0.8?Math.sin(e/240)*3:0), '#0064ff','#0a0a0a');
+        ctx.restore();
+      } else if(p<0.5){
+        const q=(p-0.25)/0.25;
+        ctx.fillStyle='#fff'; ctx.strokeStyle='#0a0a0a'; ctx.lineWidth=4;
+        roundRect(cx()-150, cy()-16, 300, 32, 16, true, true);
+        ctx.fillStyle = q>0.7?'#ff2b3c':'#00c46a';
+        roundRect(cx()-146, cy()-12, (300-8)*(1-q), 24, 12, true, false);
+        comicText(Math.ceil((1-q)*9)+'', cx(), cy()-52, 30, '#0a0a0a','#fff'); // ticking count
+      } else if(p<0.75){
+        const q=(p-0.5)/0.25, ep=ease(clamp01(q));
+        const mBob=Math.sin(e/340)*5;
+        mascot(cx(), cy()-6+mBob, 1.1, 1, -0.3);
+        ctx.globalAlpha=ep;
+        comicText('THE MIRROR', cx(), cy()+70, Math.min(W*0.06,34), '#0064ff','#0a0a0a');
+        ctx.globalAlpha=1;
+      } else {
+        const q=(p-0.75)/0.25, ep=ease(clamp01(q));
+        const gap=ep*90;
+        comicText('YOU', cx()-40-gap, cy()-10, 40, '#ff2b3c','#0a0a0a');
+        comicText('VS',  cx(), cy()-10, 30, '#0a0a0a','#fff');
+        comicText('AI',  cx()+40+gap, cy()-10, 40, '#0064ff','#0a0a0a');
+        // once clashed, keep a pulsing spark alive so it never freezes
+        const sp = q>0.5 ? (40*(q-0.5)*2) : 0;
+        const pulse = q>=1 ? 40+Math.sin(e/180)*10 : sp;
+        if(pulse>0) star(cx(), cy()-10, pulse, 12, e/600, '#ffe14d','#0a0a0a',4);
+      }
+    }
+  }
+
+  let bt=0;
+  function drawTitleBackdrop(){
+    bt+=0.02;
+    ctx.clearRect(0,0,W,H);
+    for(const d of dots){ const off=Math.sin(bt+d.ph)*3;
+      ctx.beginPath(); ctx.arc(d.x+off,d.y+off,d.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(10,10,10,0.06)'; ctx.fill(); }
+    for(const b of bursts){ b.x+=b.vx; b.y+=b.vy;
+      if(b.x<-80)b.x=W+80; if(b.x>W+80)b.x=-80; if(b.y<-80)b.y=H+80; if(b.y>H+80)b.y=-80;
+      star(b.x,b.y,b.s,10,b.rot+Math.sin(bt*0.5+b.s)*0.05, b.col,'#0a0a0a',3);
+      ctx.globalAlpha=1; ctx.fillStyle=(b.col==='#ffffff')?'#0a0a0a':'#fff';
+      ctx.save(); ctx.font=`900 ${b.s*0.5}px Archivo, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(b.word,b.x,b.y); ctx.restore(); }
+  }
+
+  function goTitle(){
+    if(phase==='title') return;
+    phase='title';
+    screen.classList.add('lit');
+    document.querySelector('.intro-inner').classList.add('reveal');
+    const sk=$('introSkip'); if(sk) sk.style.display='none';
+    if(typeof sfx!=='undefined'&&sfx.roundgo) sfx.roundgo();
+  }
+
+  function loop(ts){
+    if(!running) return;
+    if(start===null) start=ts;
+    const e=ts-start;
+    if(phase==='reel'){
+      if(e>=REEL_END){ goTitle(); }
+      else { drawReel(e); requestAnimationFrame(loop); return; }
+    }
+    drawTitleBackdrop();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ---- skip / dismiss ----
+  let dismissed=false;
+  function leaveIntro(){
+    if(dismissed) return; dismissed=true; running=false;
+    if(typeof sfx!=='undefined' && sfx.click) sfx.click();
+    screen.style.transition='opacity .35s ease'; screen.style.opacity='0';
+    setTimeout(()=>{ screen.classList.add('hidden'); }, 360);
+    window.removeEventListener('keydown',onKey);
+  }
+  function advance(){
+    if(phase==='reel'){ goTitle(); }   // first press skips the reel to the title
+    else { leaveIntro(); }             // then press enters the game
+  }
+  function onKey(){ advance(); }
+  window.addEventListener('keydown',onKey);
+  screen.addEventListener('click',(e)=>{
+    if(e.target.id==='introStartBtn'||e.target.id==='introSkip') return;
+    advance();
+  });
+  $('introStartBtn').addEventListener('click',e=>{ e.stopPropagation(); leaveIntro(); });
+  $('introSkip').addEventListener('click',e=>{ e.stopPropagation(); if(phase==='reel') goTitle(); else leaveIntro(); });
+})();
+</script>
+</body>
+</html>
